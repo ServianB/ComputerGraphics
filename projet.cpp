@@ -1,11 +1,15 @@
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <math.h>
-#include <stdio.h> 
-//#include "./SHADER/GLShader.h"
-//#include "./tiny_obj_loader.h"  
 
+#include <math.h>
+#include <stdio.h>
+#include <vector>
+
+//#include "tiny_obj_loader.h"
+#include "./SHADER/GLShader.h"
 
 // CAMERA VARIABLES --------
 float R = 5.0f; // Initial radius
@@ -13,6 +17,9 @@ float phi = 0.0f; // Initial azimuth
 float theta = 0.0f; // Initial elevation
 
 float cameraX, cameraY, cameraZ;
+
+std::vector<float> vertices;
+std::vector<unsigned int> indices;
 
 // Mouse callback function
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -38,60 +45,94 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     if (R < 1.0f) R = 1.0f;
 }
 
-// Initialize GLFW and window
-GLFWwindow* Initialize() {
-    if (!glfwInit()) {
-        return NULL;
+
+struct Application
+{
+    GLShader m_basicProgram;
+
+    void Initialize()
+    {
+        m_basicProgram.LoadVertexShader("./SHADER/basic.vs.glsl");
+        m_basicProgram.LoadFragmentShader("./SHADER/basic.fs.glsl");
+        m_basicProgram.Create();
     }
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Orbital Camera", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        return NULL;
+    // Render one frame
+    void Render() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        uint32_t program = m_basicProgram.GetProgram();
+        glUseProgram(program);
+
+        // Update camera position
+        cameraY = R * sin(theta);
+        cameraX = R * cos(theta) * cos(phi);
+        cameraZ = R * cos(theta) * sin(phi);
+
+        // Print camera coordinates to console
+        printf("Camera Position -> X: %f, Y: %f, Z: %f\n", cameraX, cameraY, cameraZ);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(cameraX, cameraY, cameraZ, 0, 0, 0, 0, 1, 0);
+
     }
 
-    glfwMakeContextCurrent(window);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-    glViewport(0, 0, 800, 600);
+    // Cleanup and terminate GLFW
+    void Terminate() {
+        m_basicProgram.Destroy();
+    }
+};
 
-    return window;
-}
 
-// Render one frame
-void Render(GLFWwindow* window) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Update camera position
-    cameraY = R * sin(theta);
-    cameraX = R * cos(theta) * cos(phi);
-    cameraZ = R * cos(theta) * sin(phi);
-
-    // Print camera coordinates to console
-    printf("Camera Position -> X: %f, Y: %f, Z: %f\n", cameraX, cameraY, cameraZ);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(cameraX, cameraY, cameraZ, 0, 0, 0, 0, 1, 0);
-
-    glfwSwapBuffers(window);
-}
-
-// Cleanup and terminate GLFW
-void Terminate(GLFWwindow* window) {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
 
 int main() {
-    GLFWwindow* window = Initialize();
-    if (!window) return -1;
 
-    while (!glfwWindowShouldClose(window)) {
-        Render(window);
+    GLFWwindow* window;
+
+    /* Initialize the library */
+    if (!glfwInit())
+        return -1;
+
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(640, 480, "projet", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+
+    // ICI !
+    GLenum error = glewInit();
+    if (error != GLEW_OK) {
+        printf("Erreur d'initialisation de GLEW \n");
+    }
+
+    Application app;
+    app.Initialize();
+
+    // Controle de la caméra
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    //glViewport(0, 0, 800, 600);
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {        
+        /* Render here */
+        app.Render();
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+
+        /* Poll for and process events */
         glfwPollEvents();
     }
 
-    Terminate(window);
+    app.Terminate();
+    glfwTerminate();
     return 0;
 }
