@@ -8,7 +8,7 @@
 #include <iostream>
 
 //#include "SHADER/GLShader.h"
-#include "../tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 
 #define INTERVAL 15
 
@@ -87,7 +87,7 @@ struct Application {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
 
-        if (LoadObject("chair.obj", m_mesh)) {
+        if (LoadObject("OBJ/Board.obj", m_mesh)) {
             std::cout << "Loaded OBJ file" << std::endl;
         }
     }
@@ -271,4 +271,6 @@ int main(void) {
 }
 
 // Compilation:
-// g++ -o tesssst obj_scene.cpp ../tiny_obj_loader.cc -lglfw -lGLEW -lGL -lGLU -lglut
+// g++ -o main main.cpp common/GLShader.cpp -framework OpenGL -lglfw
+// Exécution:
+// ./main
