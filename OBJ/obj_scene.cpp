@@ -7,6 +7,10 @@
 #include <vector>
 #include <cmath>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "../SHADER/GLShader.h"
 #include "../tiny_obj_loader.h"  // Include without defining TINYOBJLOADER_IMPLEMENTATION
 
@@ -31,7 +35,15 @@ struct Application
 {
     GLShader m_basicProgram;
     Mesh m_mesh;
-    float m_scaleFactor = 0.1f; // Add this line for scaling
+    float m_scaleFactor = 0.1f;
+
+    glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);  // Exemple de couleur d'objet
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);    // Couleur de la lumière
+    glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);      // Position de la lumière
+
+    glm::mat4 model = glm::mat4(1.0f);     // Matrice de modèle
+    glm::mat4 view = glm::mat4(1.0f);      // Matrice de vue
+    glm::mat4 projection = glm::mat4(1.0f); // Matrice de projection
 
     void Initialize()
     {
@@ -39,7 +51,7 @@ struct Application
         m_basicProgram.LoadFragmentShader("../SHADER/basic.fs.glsl");
         m_basicProgram.Create();
 
-        LoadOBJ("chair.obj", m_mesh);
+        LoadOBJ("Board.obj", m_mesh);
         SetupMesh(m_mesh);
     }
 
@@ -119,6 +131,15 @@ struct Application
 
         glUseProgram(m_basicProgram.GetProgram());
 
+        // Transmettre les uniformes au shader
+        glUniform3fv(glGetUniformLocation(m_basicProgram.GetProgram(), "objectColor"), 1, glm::value_ptr(objectColor));
+        glUniform3fv(glGetUniformLocation(m_basicProgram.GetProgram(), "lightColor"), 1, glm::value_ptr(lightColor));
+        glUniform3fv(glGetUniformLocation(m_basicProgram.GetProgram(), "lightPos"), 1, glm::value_ptr(lightPos));
+
+        glUniformMatrix4fv(glGetUniformLocation(m_basicProgram.GetProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(m_basicProgram.GetProgram(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(m_basicProgram.GetProgram(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
         glBindVertexArray(m_mesh.vao);
         glDrawElements(GL_TRIANGLES, m_mesh.indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -130,7 +151,13 @@ int main(void) {
     int height = 600;
     GLFWwindow* window;
 
-    if (!glfwInit()) return -1;
+    
+    if (!glfwInit())
+        return -1;
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(width, height, "Projet - OpenGL", NULL, NULL);
     if (!window) {
