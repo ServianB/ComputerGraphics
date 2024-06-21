@@ -6,8 +6,9 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <iostream>
+#include <vector>
 
-//#include "SHADER/GLShader.h"
+#include "SHADER/GLShader.h"
 #include "tiny_obj_loader.h"
 
 #define INTERVAL 15
@@ -65,8 +66,17 @@ struct Mesh {
     GLuint ebo;
 };
 
+struct SceneObject {
+    Mesh mesh;
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+
+    SceneObject() : position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f) {}
+};
+
 struct Application {
-    Mesh m_mesh;
+    std::vector<SceneObject> objects;
 
     void Initialize() {
         glEnable(GL_LIGHTING);
@@ -87,9 +97,21 @@ struct Application {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
 
-        if (LoadObject("OBJ/Board.obj", m_mesh)) {
-            std::cout << "Loaded OBJ file" << std::endl;
+        SceneObject obj1;
+        if (LoadObject("OBJ/Board.obj", obj1.mesh)) {
+            std::cout << "Loaded OBJ file: Board.obj" << std::endl;
         }
+        obj1.scale = vec3(0.1f,0.1f,0.1f);
+        obj1.position = vec3(5.f,0.f,0.f);
+        objects.push_back(obj1);
+
+        SceneObject obj2;
+        obj2.position = vec3(-15.0f, 0.0f, 0.0f);
+        if (LoadObject("OBJ/Board.obj", obj2.mesh)) {
+            std::cout << "Loaded OBJ file: AnotherObject.obj" << std::endl;
+        }
+        obj2.scale = vec3(0.1f,0.1f,0.1f);
+        objects.push_back(obj2);
     }
 
     bool LoadObject(const std::string& inputfile, Mesh& mesh) {
@@ -183,7 +205,16 @@ struct Application {
         glRotatef(angle_x, 1.0f, 0.0f, 0.0f);
         glRotatef(angle_y, 0.0f, 1.0f, 0.0f);
 
-        drawMesh(m_mesh);
+        for (const auto& obj : objects) {
+            glPushMatrix();
+            glTranslatef(obj.position.x, obj.position.y, obj.position.z);
+            glRotatef(obj.rotation.x, 1.0f, 0.0f, 0.0f);
+            glRotatef(obj.rotation.y, 0.0f, 1.0f, 0.0f);
+            glRotatef(obj.rotation.z, 0.0f, 0.0f, 1.0f);
+            glScalef(obj.scale.x, obj.scale.y, obj.scale.z);
+            drawMesh(obj.mesh);
+            glPopMatrix();
+        }
     }
 
     void Render() {
@@ -269,8 +300,3 @@ int main(void) {
     glfwTerminate();
     return 0;
 }
-
-// Compilation:
-// g++ -o main main.cpp common/GLShader.cpp -framework OpenGL -lglfw
-// Exécution:
-// ./main
