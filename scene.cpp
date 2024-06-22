@@ -7,11 +7,15 @@
 #include <GL/glut.h>
 #include <iostream>
 #include <vector>
+#include <cmath>
+#include <chrono>
 
 #include "SHADER/GLShader.h"
 #include "tiny_obj_loader.h"
 
 #define INTERVAL 15
+
+std::chrono::high_resolution_clock::time_point startTime;
 
 double POS_X, POS_Y;
 
@@ -71,6 +75,8 @@ struct SceneObject {
     vec3 position;
     vec3 rotation;
     vec3 scale;
+    float translation_speed;
+    float rotation_speed;
 
     SceneObject() : position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f) {}
 };
@@ -103,6 +109,8 @@ struct Application {
         }
         obj1.scale = vec3(0.1f,0.1f,0.1f);
         obj1.position = vec3(5.f,0.f,0.f);
+        obj1.translation_speed = 0.01f;
+        obj1.rotation_speed = 0.05f;
         objects.push_back(obj1);
 
         SceneObject obj2;
@@ -111,7 +119,11 @@ struct Application {
             std::cout << "Loaded OBJ file: AnotherObject.obj" << std::endl;
         }
         obj2.scale = vec3(0.1f,0.1f,0.1f);
+        obj2.translation_speed = -0.01f;
+        obj2.rotation_speed = -0.05f;
         objects.push_back(obj2);
+
+        startTime = std::chrono::high_resolution_clock::now();
     }
 
     bool LoadObject(const std::string& inputfile, Mesh& mesh) {
@@ -205,7 +217,14 @@ struct Application {
         glRotatef(angle_x, 1.0f, 0.0f, 0.0f);
         glRotatef(angle_y, 0.0f, 1.0f, 0.0f);
 
-        for (const auto& obj : objects) {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> elapsedTime = currentTime - startTime;
+        float time = elapsedTime.count();
+
+        for (auto& obj : objects) {
+            obj.position.y += obj.translation_speed * std::sin(time);
+            obj.rotation.y += obj.rotation_speed;
+
             glPushMatrix();
             glTranslatef(obj.position.x, obj.position.y, obj.position.z);
             glRotatef(obj.rotation.x, 1.0f, 0.0f, 0.0f);
