@@ -77,8 +77,9 @@ struct SceneObject {
     vec3 scale;
     float translation_speed;
     float rotation_speed;
+    float scale_speed;
 
-    SceneObject() : position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f) {}
+    SceneObject() : position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f), translation_speed(0.0f), rotation_speed(0), scale_speed(0) {}
 };
 
 struct Application {
@@ -108,19 +109,21 @@ struct Application {
             std::cout << "Loaded OBJ file: Board.obj" << std::endl;
         }
         obj1.scale = vec3(0.1f,0.1f,0.1f);
-        obj1.position = vec3(5.f,0.f,0.f);
+        obj1.position = vec3(10.f,0.f,0.f);
         obj1.translation_speed = 0.01f;
         obj1.rotation_speed = 0.05f;
+        obj1.scale_speed = 0.00005f;
         objects.push_back(obj1);
 
         SceneObject obj2;
-        obj2.position = vec3(-15.0f, 0.0f, 0.0f);
+        obj2.position = vec3(-10.0f, 0.0f, 0.0f);
         if (LoadObject("OBJ/Board.obj", obj2.mesh)) {
             std::cout << "Loaded OBJ file: AnotherObject.obj" << std::endl;
         }
         obj2.scale = vec3(0.1f,0.1f,0.1f);
         obj2.translation_speed = -0.01f;
         obj2.rotation_speed = -0.05f;
+        obj2.scale_speed = -0.00005f;
         objects.push_back(obj2);
 
         startTime = std::chrono::high_resolution_clock::now();
@@ -224,6 +227,9 @@ struct Application {
         for (auto& obj : objects) {
             obj.position.y += obj.translation_speed * std::sin(time);
             obj.rotation.y += obj.rotation_speed;
+            obj.scale.x += obj.scale_speed * std::sin(time);
+            obj.scale.y += obj.scale_speed * std::sin(time);
+            obj.scale.z += obj.scale_speed * std::sin(time);
 
             glPushMatrix();
             glTranslatef(obj.position.x, obj.position.y, obj.position.z);
