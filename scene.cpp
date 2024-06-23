@@ -224,15 +224,15 @@ struct Application {
     void Render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //uint32_t program = m_basicProgram.GetProgram();
-        //glUseProgram(program);
+        // uint32_t program = m_basicProgram.GetProgram();
+        // glUseProgram(program);
 
         glLoadIdentity();
         glTranslatef(pos_x, pos_y, pos_z);
         glRotatef(angle_x, 1.0f, 0.0f, 0.0f);
         glRotatef(angle_y, 0.0f, 1.0f, 0.0f);
 
-        // Calcul du temps
+        // Calcul du temps écoulé
         auto currentTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> elapsedTime = currentTime - startTime;
         float time = elapsedTime.count();
