@@ -84,8 +84,14 @@ struct SceneObject {
 
 struct Application {
     std::vector<SceneObject> objects;
+    GLShader m_basicProgram;
 
     void Initialize() {
+
+        // m_basicProgram.LoadVertexShader("SHADER/basic.vs.glsl");
+        // m_basicProgram.LoadFragmentShader("SHADER/basic.fs.glsl");
+        // m_basicProgram.Create();
+
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
@@ -212,11 +218,15 @@ struct Application {
     }
 
     void Terminate() {
-        // Cleanup if necessary
+        m_basicProgram.Destroy();
     }
 
-    void display() {
+    void Render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //uint32_t program = m_basicProgram.GetProgram();
+        //glUseProgram(program);
+
         glLoadIdentity();
         glTranslatef(pos_x, pos_y, pos_z);
         glRotatef(angle_x, 1.0f, 0.0f, 0.0f);
@@ -252,9 +262,6 @@ struct Application {
         }
     }
 
-    void Render() {
-        display();
-    }
 };
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
