@@ -75,9 +75,9 @@ struct SceneObject {
     vec3 position;
     vec3 rotation;
     vec3 scale;
-    float translation_speed;
-    float rotation_speed;
-    float scale_speed;
+    float translation_speed;    // Vitesse de translation
+    float rotation_speed;       // Vitesse de rotation
+    float scale_speed;          // Vitesse de changement de taille
 
     SceneObject() : position(0.0f, 0.0f, 0.0f), rotation(0.0f, 0.0f, 0.0f), scale(1.0f, 1.0f, 1.0f), translation_speed(0.0f), rotation_speed(0), scale_speed(0) {}
 };
@@ -104,6 +104,7 @@ struct Application {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
 
+        // Définition du premier objet
         SceneObject obj1;
         if (LoadObject("OBJ/Board.obj", obj1.mesh)) {
             std::cout << "Loaded OBJ file: Board.obj" << std::endl;
@@ -115,6 +116,7 @@ struct Application {
         obj1.scale_speed = 0.00005f;
         objects.push_back(obj1);
 
+        // Définition du deuxième objet
         SceneObject obj2;
         obj2.position = vec3(-10.0f, 0.0f, 0.0f);
         if (LoadObject("OBJ/Board.obj", obj2.mesh)) {
@@ -220,22 +222,30 @@ struct Application {
         glRotatef(angle_x, 1.0f, 0.0f, 0.0f);
         glRotatef(angle_y, 0.0f, 1.0f, 0.0f);
 
+        // Calcul du temps
         auto currentTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> elapsedTime = currentTime - startTime;
         float time = elapsedTime.count();
 
         for (auto& obj : objects) {
+            // Modifie la position, la rotation et la taille de l'objet courant à travers le temps
+            // Position pour la translation haut-bas
             obj.position.y += obj.translation_speed * std::sin(time);
+            // Rotation
             obj.rotation.y += obj.rotation_speed;
+            // Scale
             obj.scale.x += obj.scale_speed * std::sin(time);
             obj.scale.y += obj.scale_speed * std::sin(time);
             obj.scale.z += obj.scale_speed * std::sin(time);
 
             glPushMatrix();
+            // Translation 
             glTranslatef(obj.position.x, obj.position.y, obj.position.z);
+            // Rotation 
             glRotatef(obj.rotation.x, 1.0f, 0.0f, 0.0f);
             glRotatef(obj.rotation.y, 0.0f, 1.0f, 0.0f);
             glRotatef(obj.rotation.z, 0.0f, 0.0f, 1.0f);
+            // Scale 
             glScalef(obj.scale.x, obj.scale.y, obj.scale.z);
             drawMesh(obj.mesh);
             glPopMatrix();
@@ -325,3 +335,5 @@ int main(void) {
     glfwTerminate();
     return 0;
 }
+
+// g++ -o scene scene.cpp SHADER/GLShader.cpp tiny_obj_loader.cc -lGL -lGLEW -lglfw -lGLU -lm -ldl
