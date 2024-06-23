@@ -119,10 +119,10 @@ struct Application {
         // Définition du deuxième objet
         SceneObject obj2;
         obj2.position = vec3(-10.0f, 0.0f, 0.0f);
-        if (LoadObject("OBJ/Board.obj", obj2.mesh)) {
-            std::cout << "Loaded OBJ file: AnotherObject.obj" << std::endl;
+        if (LoadObject("OBJ/chair.obj", obj2.mesh)) {
+            std::cout << "Loaded OBJ file: chair.obj" << std::endl;
         }
-        obj2.scale = vec3(0.1f,0.1f,0.1f);
+        obj2.scale = vec3(1.5f,1.5f,1.5f);
         obj2.translation_speed = -0.01f;
         obj2.rotation_speed = -0.05f;
         obj2.scale_speed = -0.00005f;
